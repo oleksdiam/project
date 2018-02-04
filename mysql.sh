@@ -8,19 +8,19 @@ MYSQL_NEW_ROOT_PASSWORD='la_3araZa'
 ###################################################
 echo "!MYsql section started!"
 
-yum install -y expect
+sudo yum install -y expect
 
 LOG=/var/log/vagrantLogs/mysqlERR.log
-cd /usr
+sudo cd /usr
 MYSQL_RELEASE_FILE="mysql57-community-release-el7-11.noarch.rpm"
-wget https://dev.mysql.com/get/$MYSQL_RELEASE_FILE 2>>LOG
+sudo wget https://dev.mysql.com/get/$MYSQL_RELEASE_FILE 2>>LOG
 
 #if [ -e $MYSQL_RELEASE_FILE ]
 #then
-rpm -ivh $MYSQL_RELEASE_FILE
-yum install -y mysql-server
-rm -r $MYSQL_RELEASE_FILE
-systemctl start mysqld
+sudo rpm -ivh $MYSQL_RELEASE_FILE
+sudo yum install -y mysql-server
+sudo rm -r $MYSQL_RELEASE_FILE
+sudo systemctl start mysqld
 	# sudo rpm -ivh $MYSQL_RELEASE_FILE
 	# sudo yum install -y mysql-server
 	# sudo rm -r $MYSQL_RELEASE_FILE
@@ -28,10 +28,10 @@ systemctl start mysqld
 #get mysql root pass from mysqld.log
 #MYSQL_ROOT_PASSWORD_FIELD=$(grep 'temporary password' /var/log/mysqld.log | gawk '{print NF}')
 #MYSQL_ROOT_PASSWORD=$(grep 'temporary password' /var/log/mysqld.log | gawk '{print($MYSQL_ROOT_PASSWORD_FIELD)}')
-MYSQL_ROOT_PASSWORD=$(grep 'temporary password' /var/log/mysqld.log|cut -d " " -f 11)
+sudo MYSQL_ROOT_PASSWORD=$(grep 'temporary password' /var/log/mysqld.log|cut -d " " -f 11)
 
 #running secure_installation script
-SECURE_MYSQL=$(expect -c "
+sudo SECURE_MYSQL=$(expect -c "
 set timeout 10
 spawn mysql_secure_installation
 expect \"Enter password for user root:\"
@@ -56,9 +56,9 @@ expect eof
 
 echo "$SECURE_MYSQL"
 
-yum erase -y expect
+sudo yum erase -y expect
 
 #sudo echo $TP>/opt/tp.txt
-echo "MYSQL_NEW_ROOT_PASSWORD = $MYSQL_NEW_ROOT_PASSWORD">/opt/mysql.txt
+sudo echo "MYSQL_NEW_ROOT_PASSWORD = $MYSQL_NEW_ROOT_PASSWORD">/opt/mysql.txt
 
 echo "Mysql section FINISHED!!"
