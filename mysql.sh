@@ -5,6 +5,7 @@
 # sudo yum install -y  wget
 
 MYSQL_NEW_ROOT_PASSWORD='la_3araZa'
+MYSQL_RELEASE_FILE="mysql57-community-release-el7-11.noarch.rpm"
 ###################################################
 #MYsql57 SECTION				  #
 ###################################################
@@ -14,15 +15,14 @@ sudo yum install -y expect
 
 LOG=/var/log/vagrantLogs/mysqlERR.log
 sudo cd /usr
-MYSQL_RELEASE_FILE="mysql57-community-release-el7-11.noarch.rpm"
 sudo wget https://dev.mysql.com/get/$MYSQL_RELEASE_FILE 2>>LOG
 
 if [ -e $MYSQL_RELEASE_FILE ]
 then
-sudo rpm -ivh $MYSQL_RELEASE_FILE
-sudo yum install -y mysql-server
-sudo rm -f $MYSQL_RELEASE_FILE
-sudo systemctl start mysqld
+sudo rpm -ivh $MYSQL_RELEASE_FILE 2>>LOG
+sudo yum install -y mysql-server 2>>LOG
+sudo rm -f $MYSQL_RELEASE_FILE 2>>LOG
+sudo systemctl start mysqld 2>>LOG
 
 #get mysql root pass from mysqld.log
 #MYSQL_ROOT_PASSWORD_FIELD=$(grep 'temporary password' /var/log/mysqld.log | gawk '{print NF}')
@@ -55,7 +55,7 @@ fi
 
 echo "$SECURE_MYSQL"
 
-sudo yum erase -y expect
+sudo yum erase -y expect 2>>LOG
 
 sudo echo "MYSQL_NEW_ROOT_PASSWORD = $MYSQL_NEW_ROOT_PASSWORD">/opt/mysql.txt
 
