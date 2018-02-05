@@ -1,6 +1,9 @@
 #!/bin/bash
 
+#Make sure that trere is already installed wget on your machine
+#else uncomment next row 
 # sudo yum install -y  wget
+
 #JavaSetup section	#
 #####################
 #This script downloads and setup Oracle Java 1.8.0.162#

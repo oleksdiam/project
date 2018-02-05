@@ -1,6 +1,8 @@
 #!/bin/bash
 
-#SYNOPSYS   mysql_secure.sh <MySQL_new_root_password>
+#Make sure that trere is already installed wget on your machine
+#else uncomment next row 
+# sudo yum install -y  wget
 
 MYSQL_NEW_ROOT_PASSWORD='la_3araZa'
 ###################################################
@@ -15,16 +17,13 @@ sudo cd /usr
 MYSQL_RELEASE_FILE="mysql57-community-release-el7-11.noarch.rpm"
 sudo wget https://dev.mysql.com/get/$MYSQL_RELEASE_FILE 2>>LOG
 
-#if [ -e $MYSQL_RELEASE_FILE ]
-#then
+if [ -e $MYSQL_RELEASE_FILE ]
+then
 sudo rpm -ivh $MYSQL_RELEASE_FILE
 sudo yum install -y mysql-server
-sudo rm -r $MYSQL_RELEASE_FILE
+sudo rm -f $MYSQL_RELEASE_FILE
 sudo systemctl start mysqld
-	# sudo rpm -ivh $MYSQL_RELEASE_FILE
-	# sudo yum install -y mysql-server
-	# sudo rm -r $MYSQL_RELEASE_FILE
-	# sudo systemctl start mysqld
+
 #get mysql root pass from mysqld.log
 #MYSQL_ROOT_PASSWORD_FIELD=$(grep 'temporary password' /var/log/mysqld.log | gawk '{print NF}')
 #MYSQL_ROOT_PASSWORD=$(grep 'temporary password' /var/log/mysqld.log | gawk '{print($MYSQL_ROOT_PASSWORD_FIELD)}')
@@ -52,13 +51,12 @@ expect \"Reload privilege tables now?\"
 send \"y\r\"
 expect eof
 ")
-#fi
+fi
 
 echo "$SECURE_MYSQL"
 
 sudo yum erase -y expect
 
-#sudo echo $TP>/opt/tp.txt
 sudo echo "MYSQL_NEW_ROOT_PASSWORD = $MYSQL_NEW_ROOT_PASSWORD">/opt/mysql.txt
 
 echo "Mysql section FINISHED!!"
