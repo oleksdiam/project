@@ -2,7 +2,7 @@
 
 ### Host OS CentOS 7
 # according to   	https://www.vultr.com/docs/how-to-install-sonarqube-on-centos-7
-# with 			https://search.yahoo.com/yhs/search?hspart=ddc&hsimp=yhs-linuxmint&type=__alt__ddc_linuxmint_com&p=jenkins
+# with 			https://michalwegrzyn.wordpress.com/2016/07/14/do-not-run-sonar-as-root/
 # and 			https://docs.sonarqube.org/display/SONAR/Requirements
 
 # Declare variables
@@ -21,14 +21,6 @@ POSTGRE_LINK="https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x8
 
 SONAR_LINK="https://sonarsource.bintray.com/Distribution/sonarqube/sonarqube-6.7.1.zip"
 
-#Create user environment variables file
-VAR_FILE="/etc/profile.d/varapp.sh"
-echo '#!/bin/bash
-export JAVA_HOME=/usr/jdk
-export JRE_HOME=/usr/jdk/jre
-
-export PATH=$PATH:$JAVA_HOME"/bin":$JRE_HOME"/bin"' > $VAR_FILE
-
 # Make sure we run script with root privileges
  if [ $UID != 0 ];
  	then		# not root, use sudo   # $0=./script.sh  # $*=treat everything as one word  # exit $?=return into the bash
@@ -43,6 +35,14 @@ export PATH=$PATH:$JAVA_HOME"/bin":$JRE_HOME"/bin"' > $VAR_FILE
  else
  	USER="$(whoami)"
 fi
+
+#Create user environment variables file
+VAR_FILE="/etc/profile.d/varapp.sh"
+
+echo 'export JAVA_HOME=/usr/jdk
+export JRE_HOME=/usr/jdk/jre
+
+export PATH=$PATH:$JAVA_HOME"/bin":$JRE_HOME"/bin"' > $VAR_FILE
 
 #basic setup
 echo "Updating system...Please wait 5-10 minutes."
@@ -140,7 +140,7 @@ Restart=always
 [Install]
 WantedBy=multi-user.target' > /etc/systemd/system/sonar.service
 
-sed -i.bak -e '/RUN_AS_USER=/s/^#//; /RUN_AS_USER=/s/=/=sonar/' sonar.sh
+sed -i.bak -e '/RUN_AS_USER=/s/^#//; /RUN_AS_USER=/s/=/=sonar/' /opt/sonarqube/bin/sonar.sh
 
 # for current session
 sysctl -w vm.max_map_count=262144
@@ -149,8 +149,13 @@ ulimit -n 65536
 ulimit -u 2048
 
 # for permanent use
+echo 'sysctl -w vm.max_map_count=262144
+sysctl -w fs.file-max=65536
+ulimit -n 65536
+ulimit -u 2048' > /etc/sysctl.d/99-sonarqube.conf
+
 echo 'sonarqube   -   nofile   65536
-sonarqube   -   nproc    2048' > /etc/limits.d/99-sonarqube.conf
+sonarqube   -   nproc    2048' > /etc/limits.conf
 
 firewall-cmd --permanent --zone=public --add-port=5432/tcp 2>>$LOG
 firewall-cmd --permanent --zone=public --add-port=9000/tcp 2>>$LOG
