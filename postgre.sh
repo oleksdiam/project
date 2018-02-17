@@ -9,7 +9,9 @@
 
 #creating variable with user passwords.
 POSTGRE_ROOT_PASS='la_3araZa'	#username=postgres
+PSQL_USER=sonar
 DB_USERPASS='1a_3araZa'			#username=sonar
+SONAR_USER=sonar
 SONAR_PASS='la_3araZa'			#username=sonar
 
 JAVA_DOWNLOAD_LINK="http://download.oracle.com/otn-pub/java/jdk/8u162-b12/0da788060d494f5095bf8624735fa2f1/jdk-8u162-linux-x64.rpm"
@@ -79,30 +81,30 @@ echo "!PostgreSQL section started!"
 LOG=/var/log/vagrantLogs/postgresqlERR.log
 cd /usr
 # wget https://dev.mysql.com/get/$POSTGRE_RELEASE_FILE 2>>LOG
-rpm -Uvh $POSTGRE_LINK
-yum install -y postgresql96-server postgresql96-contrib   ##
-/usr/pgsql-9.6/bin/postgresql96-setup initdb
+rpm -Uvh $POSTGRE_LINK 2>>LOG
+yum install -y postgresql96-server postgresql96-contrib 2>>LOG  ##
+/usr/pgsql-9.6/bin/postgresql96-setup initdb 2>>LOG
 	
 # Edit the /var/lib/pgsql/9.6/data/pg_hba.conf to enable MD5-based authentication.
 # Find the following lines and change peer to trust and idnet to md5.
-sed -i.bak -e '/all.*all.*peer/s/peer/trust/' /var/lib/pgsql/9.6/data/pg_hba.conf
-sed -i -e '/all.*all.*ident/s/ident/md5/' /var/lib/pgsql/9.6/data/pg_hba.conf
+sed -i.bak -e '/all.*all.*peer/s/peer/trust/; 
+				/all.*all.*ident/s/ident/md5/
+				' /var/lib/pgsql/9.6/data/pg_hba.conf 2>>LOG
 
 systemctl start postgresql-9.6 2>>LOG
 systemctl enable postgresql-9.6 2>>LOG
 
-##-------------------------------------### the byte below is not automated yet 
-passwd postgres                     # la_3araZa		waiting for answer, repeating twice	howto automate???
-su - postgres 							# Switch to the postgres user.
+##-------------------------------------### the byte below is not automated yet / not checked at all 
+# passwd postgres                     # la_3araZa		waiting for answer, repeating twice	howto automate???
+# su - postgres 							# Switch to the postgres user.
 
-createuser sonar
-psql  									# here we switch to psql shell
-
-ALTER USER sonar WITH ENCRYPTED password 'la_3araZa';
-
-CREATE DATABASE sonar OWNER sonar;
-\q										# exiting from psql shell
-exit 									# exiting  from postgresql user shell to sudo user
+# createuser sonar
+# psql  									# here we switch to psql shell
+sudo -u postgres bash -c "psql -c \"CREATE USER '$PSQL_USER' WITH PASSWORD '$DB_USERPASS';\""
+sudo -u postgres bash -c "psql -c \"ALTER USER '$PSQL_USER' WITH ENCRYPTED password '$DB_USERPASS';\""
+sudo -u postgres bash -c "psql -c \"CREATE DATABASE sonar OWNER $SONAR_USER;\""
+#\q										# exiting from psql shell
+#exit 									# exiting  from postgresql user shell to sudo user
 ###-------------------------------------###
 
 cd /opt
@@ -119,7 +121,7 @@ chown -R sonar:sonar /opt/sonarqube
 sed -i.bak -e '/jdbc.username=/s/^#//; /jdbc.username=/s/=/=sonar/;
 				 /jdbc.password=/s/^#//; /jdbc.password=/s/=/=$SONAR_PASS/;
 				 /jdbc.url=jdbc:postgresql:/s/^#//
-				' sonar.properties
+				' /opt/sonarqube/conf/sonar.properties
 
 echo '[Unit]
 Description=SonarQube service
@@ -146,62 +148,16 @@ sysctl -w fs.file-max=65536
 ulimit -n 65536
 ulimit -u 2048
 
-sysctl -w vm.max_map_count=262144
-sysctl -w fs.file-max=65536
-ulimit -n 65536
-ulimit -u 2048
-
+# for permanent use
 echo 'sonarqube   -   nofile   65536
-sonarqube   -   nproc    2048'
-
-systemctl start sonar
-systemctl enable sonar 		# Enable the SonarQube service to automatically start at boot time.
-# systemctl status sonar 	# To check if the service is running, run:
-
-# vi /etc/httpd/conf.d/sonar.postgre.local.conf
-
-# '<VirtaulHost *:80>
-#     ServerName sonar.postgre.local
-#     ServerAdmin sonar@postgre.local
-#     ProxyPreserveHost On
-#     ProxyPass / http://localhost:9000/
-#     ProxyPassReverse / http://localhost:9000/
-#     TransferLog /var/log/httpd/sonar.postgre.local_access.log
-#     ErrorLog /var/log/httpd/sonar.postgre.local_error.log
-# </VirtualHost>'
-
-
-	
-# 	# yum install -y expect
-# 	# SECURE_POSTGRE=$(expect -c "
-# 	# set timeout 10
-# 	# spawn mysql_secure_installation
-# 	# expect \"Enter password for user root:\"
-# 	# send \"$POSTGRE_ROOT_PASSWORD\r\"
-# 	# expect \"New password:\"
-# 	# send \"$POSTGRE_NEW_ROOT_PASSWORD\r\"
-# 	# expect \"Re-enter new password:\"
-# 	# send \"$POSTGRE_NEW_ROOT_PASSWORD\r\" 
-# 	# expect \"Change the password for root ? ((Press y|Y for Yes, any other key for No) :\"
-# 	# send \"n\r\"
-# 	# expect \"Remove anonymous users? (Press y|Y for Yes, any other key for No) :\"
-# 	# send \"y\r\"
-# 	# expect \"Disallow root login remotely?\"
-# 	# send \"y\r\"
-# 	# expect \"Remove test database and access to it?\"
-# 	# send \"y\r\"
-# 	# expect \"Reload privilege tables now?\"
-# 	# send \"y\r\"
-# 	# expect eof
-# 	# ")
-# 	# sudo yum erase -y expect 2>>LOG
+sonarqube   -   nproc    2048' > /etc/limits.d/99-sonarqube.conf
 
 firewall-cmd --permanent --zone=public --add-port=5432/tcp 2>>$LOG
 firewall-cmd --permanent --zone=public --add-port=9000/tcp 2>>$LOG
 # firewall-cmd --permanent --zone=public --add-port=80/tcp 2>>$LOG
 # firewall-cmd --permanent --zone=public --add-sevice=http 2>>$LOG
 firewall-cmd --reload
-# echo "$SECURE_POSTGRE"
 
-
-# echo "POSTGRE_NEW_ROOT_PASSWORD = $POSTGRE_NEW_ROOT_PASSWORD">/opt/mysql.txt
+systemctl start sonar
+systemctl enable sonar 		# Enable the SonarQube service to automatically start at boot time.
+# systemctl status sonar 	# To check if the service is running, run:
