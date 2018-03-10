@@ -1,0 +1,17 @@
+{
+  "name": "dias-sonarqube",
+  "version": "1.0.0",
+  "author": "dias",
+  "summary": "upgrade maestrodev-sonarqube module",
+  "license": "Apache-2.0",
+  "source": "",
+  "project_page": null,
+  "issues_url": null,
+  "dependencies": [
+    {
+      "name": "puppetlabs-stdlib",
+      "version_requirement": ">= 1.0.0"
+    }
+  ],
+  "data_provider": null
+}

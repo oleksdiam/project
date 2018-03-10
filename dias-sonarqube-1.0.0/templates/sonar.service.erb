@@ -1,0 +1,15 @@
+[Unit]
+Description=SonarQube service
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=<%= @script %> start
+ExecStop= <%= @script %> stop
+ExecReload=<%= @script %> restart
+PIDFile= <%= @pid_d %>
+Type=forking
+User=sonar
+
+[Install]
+WantedBy=multi-user.target
