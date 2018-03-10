@@ -32,7 +32,7 @@ node default {
 # here is the line 32
 # https://github.com/puppetlabs/puppetlabs-java.git
 # puppet module install --ignore-dependencies puppetlabs-java --version 2.4.0
-node 'pclient.local' {
+node 'sonar.local' {
 
   java::oracle { 'jdk8':
     ensure        => 'present',
