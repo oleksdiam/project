@@ -30,27 +30,24 @@ node default {
   #   class { 'my_class': }
 }
 # here is the line 32
-# https://github.com/puppetlabs/puppetlabs-java.git
-# puppet module install --ignore-dependencies puppetlabs-java --version 2.4.0
+
 node 'sonar.local' {
 
-  java::oracle { 'jdk8':
-    ensure        => 'present',
-    version_major => '8u162',
-    version_minor => 'b12',
-    url_hash      => '0da788060d494f5095bf8624735fa2f1',
+  class { 'java8': 
     java_se       => 'jdk',
+    # version_major => '162',
+    # version_minor => 'b12',
+    # hash          => '0da788060d494f5095bf8624735fa2f1',
   }
 
   $jdbc = {
-    username => 'sonarqube',
-    password => 'J0benB0ben',
+    username => 'sonar',
+    password => 'sonar',
   }
 # here is the line 47 
 
   class { 'sonarqube':
-    arch          => 'linux-x86-64',
-    version       => '6.7.1',
+    version       => '6.7.2',
     user          => 'sonar',
     group         => 'sonar',
     service       => 'sonar',
@@ -61,11 +58,11 @@ node 'sonar.local' {
 #    web_java_opts => '-Xmx1024m',
     log_folder    => '/var/local/sonar/logs',
     updatecenter  => 'true',
-   # acceptable values of <db_provider> are 'embedded' , 'mysql' , 'psql' , 'oracle'
-#    db_provider   => 'embedded'
-#    db_host       => 'localhost',
-    db_provider   => 'psql',
-    db_host       => 'db.local',
+#  # allowed values of <db_provider> are: 'embedded' , 'mysql' , 'psql' , 'oracle', 'mssql_ms' , 'mssql_sql'
+    db_provider   => 'embedded'
+    db_host       => 'localhost',
+    # db_provider   => 'psql',
+    # db_host       => 'db.local',
 #    http_proxy    => {
 #      host        => 'proxy.example.com',
 #      port        => '8080',
@@ -76,3 +73,14 @@ node 'sonar.local' {
   }
 }
 
+node 'jenkins.local' {
+
+  class { 'java8': 
+    java_se       => 'jdk',
+    # version_major => '162',
+    # version_minor => 'b12',
+    # hash          => '0da788060d494f5095bf8624735fa2f1',
+  }
+  include maven
+  include jenkins
+}                         
