@@ -15,7 +15,7 @@ class sonarqube (
   $download_url     = 'https://sonarsource.bintray.com/Distribution/sonarqube',
   $download_dir     = '/usr/local/src',
   $context_path     = '/',
-  $arch             = $sonarqube::params::arch,
+  $arch             = $sonarqube::paras::arch,
   $https            = {},
   $ldap             = {},
   # acceptable values of <db_type> are 'embedded' , 'mysql' , 'psql' , 'oracle'
